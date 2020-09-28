@@ -8,8 +8,7 @@ login="username"
 fulldir="${backupdir}/`date +%Y`/`date +%m`/`date +%d`"
 
 # Условие для проверки наличия директории и ее очистки;
-if [ -d $backupdir ]
-then
+if [ -d $backupdir ]; then
 	find ${backupdir}/* -type d -mtime +${backupage} -exec rm -rf {} \; > /dev/null
 fi
 
