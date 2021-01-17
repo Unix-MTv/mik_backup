@@ -39,6 +39,6 @@ upload_backup() {
 # Цикл для функций;
 for r in ${routers[@]}; do
 	check_host || continue
-	create_backup && sleep 5
+	create_backup && sleep 3
 	upload_backup
 done
