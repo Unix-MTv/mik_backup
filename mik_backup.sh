@@ -7,6 +7,11 @@ login="username"
 #passwd="pa$Sw0rd"
 fulldir="${backupdir}/`date +%Y`/`date +%m`/`date +%d`"
 
+# Функция проверки хостов;
+check_host() {
+	ping -c 3 ${r} > /dev/null
+}
+
 # Условие для проверки наличия директории и ее очистки;
 if [ -d $backupdir ]; then
 	find ${backupdir}/* -type d -mtime +${backupage} -exec rm -rf {} \; > /dev/null
@@ -14,7 +19,6 @@ fi
 
 # Функция создание бекапа;
 create_backup() {
-	ping -c 3 ${r} > /dev/null || continue
 	cmd_cleanup="/ip dns cache flush; /console clear-history"
 	ssh ${login}@$r -i $privatekey "${cmd_cleanup}" > /dev/null
 	cmd_backup="/system backup save name=${r}.backup"
@@ -34,7 +38,7 @@ upload_backup() {
 
 # Цикл для функций;
 for r in ${routers[@]}; do
-	create_backup
-	sleep 5
+	check_host || continue
+	create_backup && sleep 5
 	upload_backup
 done
