@@ -11,23 +11,23 @@ curdate="$(date +%d-%m-%Y)"
 logfile="${project}.log"
 
 # Условие для проверки наличия директории и ее очистки;
-if [ -d $backupdir ]; then
-	find ${backupdir}/* -type d -mtime +$backupage -exec rm -rf {} \; > /dev/null
+if [ -d "$backupdir" ]; then
+	find "${backupdir}"/* -type d -mtime +"$backupage" | xargs rm -rf
+	find "${backupdir}" -maxdepth 1 -name "*.log" -size +10k -exec rm -f {} \;
 fi
 
 # Задаем функцию утилиты logger;
 function logger() {
-	echo "["`date "+%H:%M:%S"`"]: $1" >> $backupdir/$logfile
+	echo "["`date "+%H:%M:%S"`"]: $1" >> "$backupdir/$logfile"
 }
 # - #
-mkdir -p $fulldir
-echo >> $backupdir/$logfile
+mkdir -p "$fulldir"
 logger "--- $curdate - START BACKUP: $project ---"
 
 # Функция проверки доступности хостов;
 check_host() {
-	ping -c 3 ${r} > /dev/null ; status_ch=$?
-	if [ $status_ch -ne 0 ] ; then logger "[-] Хост: ${r} недоступен" ; fi
+	ping -c 3 "${r}" > /dev/null ; status_ch="$?"
+	if [ "$status_ch" -ne 0 ] ; then logger "[-] Хост: ${r} недоступен" ; fi
 }
 
 # Функция создания бекапа;
@@ -49,11 +49,12 @@ upload_backup() {
 }
 
 # Цикл;
-for r in ${routers[@]}; do
-	check_host ; if [ $status_ch -ne 0 ] ; then continue ; fi
+for r in "${routers[@]}"; do
+	check_host ; if [ "$status_ch" -ne 0 ] ; then continue ; fi
 	create_backup && sleep 3
 	upload_backup
 	logger "[+] Хост: ${r} успешно"
 done
 
 logger "--- $curdate - END BACKUP: $project ---"
+echo >> "$backupdir/$logfile"
