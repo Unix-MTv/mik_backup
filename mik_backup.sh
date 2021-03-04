@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 routers=( 172.16.5.1 172.17.5.1 )
-project="int.lan"
+project="core"
 backupage="42"
 login="username"
 privatekey="/root/.ssh/mik_rsa"
