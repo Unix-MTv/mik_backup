@@ -1,23 +1,36 @@
 #!/usr/bin/env bash
 routers=( 172.16.5.1 172.17.5.1 )
-backupdir="/mnt/data/mik-backup/backup"
+project="int.lan"
 backupage="42"
-privatekey="/root/.ssh/mik_rsa"
 login="username"
-#passwd="pa$Sw0rd"
+privatekey="/root/.ssh/mik_rsa"
+backupdir="/mnt/data/mik-backup/$project"
+# - #
 fulldir="${backupdir}/`date +%Y`/`date +%m`/`date +%d`"
+curdate="$(date +%d-%m-%Y)"
+logfile="${project}.log"
 
 # Условие для проверки наличия директории и ее очистки;
 if [ -d $backupdir ]; then
-	find ${backupdir}/* -type d -mtime +${backupage} -exec rm -rf {} \; > /dev/null
+	find ${backupdir}/* -type d -mtime +$backupage -exec rm -rf {} \; > /dev/null
 fi
 
-# Функция проверки хостов;
+# Задаем функцию утилиты logger;
+function logger() {
+	echo "["`date "+%H:%M:%S"`"]: $1" >> $backupdir/$logfile
+}
+# - #
+mkdir -p $fulldir
+echo >> $backupdir/$logfile
+logger "--- $curdate - START BACKUP: $project ---"
+
+# Функция проверки доступности хостов;
 check_host() {
-	ping -c 3 ${r} > /dev/null
+	ping -c 3 ${r} > /dev/null ; status_ch=$?
+	if [ $status_ch -ne 0 ] ; then logger "[-] Хост: ${r} недоступен" ; fi
 }
 
-# Функция создание бекапа;
+# Функция создания бекапа;
 create_backup() {
 	cmd_cleanup="/ip dns cache flush; /console clear-history"
 	ssh ${login}@$r -i $privatekey "${cmd_cleanup}" > /dev/null
@@ -29,16 +42,18 @@ create_backup() {
 
 # Функция загрузки бекапа;
 upload_backup() {
-	mkdir -p $fulldir
 	scp -i $privatekey ${login}@${r}:${r}.backup ${fulldir}
 	scp -i $privatekey ${login}@${r}:${r}.rsc ${fulldir}
 	ssh ${login}@$r -i $privatekey "/file remove \"${r}.backup\""
 	ssh ${login}@$r -i $privatekey "/file remove \"${r}.rsc\""
 }
 
-# Цикл для функций;
+# Цикл;
 for r in ${routers[@]}; do
-	check_host || continue
+	check_host ; if [ $status_ch -ne 0 ] ; then continue ; fi
 	create_backup && sleep 3
 	upload_backup
+	logger "[+] Хост: ${r} успешно"
 done
+
+logger "--- $curdate - END BACKUP: $project ---"
