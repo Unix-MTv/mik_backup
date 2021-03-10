@@ -27,7 +27,7 @@ logger "--- $curdate - START BACKUP: $project ---"
 # Функция проверки доступности хостов;
 check_host() {
 	ping -c 3 "${r}" > /dev/null ; status_ch="$?"
-	if [ "$status_ch" -ne 0 ] ; then logger "[-] Хост: ${r} недоступен" ; fi
+	if [ "$status_ch" -ne 0 ] ; then logger "[-] Хост: ${r}, недоступен." ; fi
 }
 
 # Функция создания бекапа;
@@ -53,7 +53,7 @@ for r in "${routers[@]}"; do
 	check_host ; if [ "$status_ch" -ne 0 ] ; then continue ; fi
 	create_backup && sleep 3
 	upload_backup
-	logger "[+] Хост: ${r} успешно"
+	logger "[+] Хост: ${r}, успешно."
 done
 
 logger "--- $curdate - END BACKUP: $project ---"
