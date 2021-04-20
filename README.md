@@ -1,5 +1,5 @@
 # mik_backup
-Simmple bash script backup to mikrotik for linux server.
+Simple bash script backup to mikrotik for linux server.
 
 <p>Create key mik_rsa:<br />
 # cd ~/.ssh/<br />
