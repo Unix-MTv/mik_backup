@@ -6,7 +6,7 @@ login="username"
 privatekey="/root/.ssh/mik_rsa"
 # - #
 backupdir="$(dirname "$(readlink -f "$0")")/$project"
-fulldir="${backupdir}/`date +%Y`/`date +%m`/`date +%d`"
+fulldir="${backupdir}/$(date +%Y)/$(date +%m)/$(date +%d)"
 curdate="$(date +%d-%m-%Y)"
 logfile="${project}.log"
 
@@ -18,7 +18,7 @@ fi
 
 # Задаем функцию утилиты logger;
 function logger() {
-	echo "["`date "+%H:%M:%S"`"]: $1" >> "$backupdir/$logfile"
+	echo -e "[$(date "+%H:%M:%S")]: $1" >> "$backupdir/$logfile"
 }
 # - #
 mkdir -p "$fulldir"
@@ -33,19 +33,19 @@ check_host() {
 # Функция создания бекапа;
 create_backup() {
 	cmd_cleanup="/ip dns cache flush; /console clear-history"
-	ssh ${login}@$r -i $privatekey "${cmd_cleanup}" > /dev/null
+	ssh "${login}"@"${r}" -i "${privatekey}" "${cmd_cleanup}" > /dev/null
 	cmd_backup="/system backup save name=${r}.backup"
-	ssh ${login}@$r -i $privatekey "${cmd_backup}" > /dev/null
+	ssh "${login}"@"${r}" -i "${privatekey}" "${cmd_backup}" > /dev/null
 	cmd_backup="/export compact file=${r}"
-	ssh ${login}@$r -i $privatekey "${cmd_backup}" > /dev/null
+	ssh "${login}"@"${r}" -i "${privatekey}" "${cmd_backup}" > /dev/null
 }
 
 # Функция загрузки бекапа;
 upload_backup() {
-	scp -i $privatekey ${login}@${r}:${r}.backup ${fulldir}
-	scp -i $privatekey ${login}@${r}:${r}.rsc ${fulldir}
-	ssh ${login}@$r -i $privatekey "/file remove \"${r}.backup\""
-	ssh ${login}@$r -i $privatekey "/file remove \"${r}.rsc\""
+	scp -i "${privatekey}" "${login}"@"${r}":"${r}".backup "${fulldir}"
+	scp -i "${privatekey}" "${login}"@"${r}":"${r}".rsc "${fulldir}"
+	ssh "${login}"@"${r}" -i "${privatekey}" "/file remove \"${r}.backup\""
+	ssh "${login}"@"${r}" -i "${privatekey}" "/file remove \"${r}.rsc\""
 }
 
 # Цикл;
